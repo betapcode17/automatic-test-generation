@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Playwright artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+**/test-results/
+**/playwright-report/
+**/blob-report/
+
+# Playwright CLI local state
+.playwright/
+.playwright-cli/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# TypeScript
+*.tsbuildinfo
+
+# Local generated framework artifacts
+antigravity-playwright-typescript-framework/
+antigravity-playwright-typescript-framework/node_modules/
+antigravity-playwright-typescript-framework/test-results/
+antigravity-playwright-typescript-framework/playwright-report/
+antigravity-playwright-typescript-framework/blob-report/
