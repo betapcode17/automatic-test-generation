@@ -52,6 +52,8 @@ Sheet:
 
 Spreadsheet rules: read the file first; if no sheet is specified, use the first sheet with test-case columns. Required columns: ID, scenario/title, steps, expected result. Optional: module, requirement ID, preconditions, test data, priority, type, automation candidate, suggested level, risk, notes. Match headers case/space-insensitively, split multiline steps, normalize levels to `E2E/API/Component/Security/Visual/Manual`, skip empty/unmappable rows, and never invent routes/selectors/credentials/backend state.
 
+After parsing, create an inventory of all parsed case IDs. Every non-empty spreadsheet row must end in exactly one bucket: `generated`, `manual`, or `blocked`. Do not silently drop any case ID.
+
 Additional context may be provided:
 
 ```text
@@ -78,6 +80,8 @@ All generated files must be created under `antigravity-playwright-typescript-fra
 Generate a multi-layer Playwright test suite from the spreadsheet.
 
 Route every case to the best artifact: `E2E` browser UI, `API` request tests, `Security` safe bounded security tests, `Visual` responsive/visual checks, `Component` component tests if configured, or `Manual` checklist only when automation is unsafe/unreliable. Do not skip non-E2E cases just because they are not UI tests.
+
+Coverage is mandatory: every parsed case ID must appear in exactly one generated spec, manual checklist, or blocked-case report. Generate/update `tests/generated/coverage-map.json` with every parsed case ID and final artifact path. If a case is not automatable, write it to `tests/manual/manual-cases.md`. If evidence is missing, write it to `tests/manual/blocked-cases.md`. Do not finish with missing case IDs.
 
 # IMPLEMENTATION RULES
 
@@ -126,7 +130,36 @@ Do not use `../../fixtures/fixtures` from `tests/generated/*/` because it resolv
 
 # VALIDATION
 
-From `antigravity-playwright-typescript-framework/`, run when possible: `npm run lint`, `npm run typecheck` or `npx tsc --noEmit`, `npx playwright test --list`, and targeted generated specs. Use `--project=chromium` for E2E/visual when app/browser/credentials exist; API/security can run without browser. Report blockers.
+Validation is mandatory after writing generated code. Do not finish immediately after creating files.
+
+From `antigravity-playwright-typescript-framework/`, run this validation ladder:
+
+```bash
+npm run typecheck
+npx playwright test --list
+npx playwright test tests/generated --project=chromium
+```
+
+If `npm run typecheck` is unavailable, run:
+
+```bash
+npx tsc --noEmit
+```
+
+If `npm run lint` exists, run it before typecheck.
+
+Validation rules:
+
+* `typecheck` or `npx tsc --noEmit` is required when TypeScript config exists.
+* `npx playwright test --list` is required when Playwright is installed.
+* Coverage validation is required: parsed spreadsheet IDs must match `tests/generated/coverage-map.json`.
+* If any parsed case ID is missing from generated/manual/blocked artifacts, generate the missing artifact and rerun validation.
+* Run targeted generated specs when the required app server, browser, API, and credentials are available.
+* API/security specs should be executed when the API base URL is available; they do not need a browser.
+* If validation fails because of generated code, fix the code and rerun the failed validation command.
+* Repeat fix-and-rerun until validation passes or only an environment blocker remains.
+* Do not mark the workflow complete while generated code has unresolved TypeScript, import, module resolution, syntax, or Playwright test discovery errors.
+* If a command cannot run, report the exact blocker and the command that was skipped.
 
 # RESPONSE
 
@@ -137,6 +170,7 @@ After writing files, report:
 3. Routed Test Cases: ID, route, artifact, reason.
 4. Manual Cases: ID, reason, required evidence.
 5. Assumptions/Risks: missing selectors/routes/data/setup or inferred values.
-6. Validation Report: command, result, notes/blockers.
+6. Coverage Summary: parsed count, generated count, manual count, blocked count, missing count.
+7. Validation Report: command, result, fixes applied, remaining blockers.
 
-Final check: no sleeps/XPath/fragile CSS/full URLs/hardcoded credentials; tests are tagged, independent, and validated when possible.
+Final check: no sleeps/XPath/fragile CSS/full URLs/hardcoded credentials; tests are tagged, independent, and all generated code has passed available validation.

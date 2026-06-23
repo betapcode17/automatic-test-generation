@@ -1,4 +1,4 @@
----
+﻿---
 description: 
 ---
 
@@ -78,7 +78,7 @@ Flag these as issues when found:
 - Shared mutable state between tests
 - Tests without meaningful assertions
 - Assertions that only check generic visibility when business outcome should be checked
-- Missing `@smoke` / `@regression` tags when test priority/type is known
+- Generated tests are outside `tests/generated/` or are not covered by `tests/generated/coverage-map.json` when generated from spreadsheet cases
 - Repeated setup that should be extracted into helper, fixture, or POM
 - Page Object classes that only wrap selectors without improving readability
 - Over-engineered POM for very small generated test suites
@@ -164,3 +164,5 @@ Explain why in 2-4 sentences.
 - Do not invent issues that are not supported by the provided code.
 - If information is missing, list it under assumptions instead of guessing.
 - Prefer concise examples over long rewrites.
+
+
